@@ -120,8 +120,10 @@ build-free.
 CrocBridge binds to `127.0.0.1` only and the local API has **no
 authentication** — anyone who can reach the port can send files from your
 machine, so do not bind it to other interfaces (the app warns loudly if you
-try). The transfer secret is passed to croc through the `CROC_SECRET`
-environment variable and never on a command line. Found a security issue?
+try). To stop a web page you visit from driving the API in the background,
+state-changing requests carrying a foreign `Origin` are rejected. The
+transfer secret is passed to croc through the `CROC_SECRET` environment
+variable and never on a command line. Found a security issue?
 Please open an issue (or contact the maintainer privately for anything
 sensitive) rather than disclosing it publicly first.
 
