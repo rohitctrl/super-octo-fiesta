@@ -2,8 +2,9 @@
 
 import subprocess
 import sys
+from urllib.parse import urlparse
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, abort, jsonify, request, send_from_directory
 
 from . import crocbin, pairing
 from .sender import SendBusy
@@ -13,9 +14,26 @@ SETTINGS_KEYS = (
     "throttle_upload",
 )
 
+# Methods that change state and so must be protected from cross-origin abuse.
+UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
 
 def create_app(config, state, receiver, sender):
     app = Flask(__name__, static_folder="static", static_url_path="/static")
+
+    @app.before_request
+    def block_cross_origin():
+        # The API has no auth because it lives on 127.0.0.1, but a web page the
+        # user visits can still POST to it cross-origin (a CSRF). The browser
+        # is forced to send an Origin header on such requests and cannot forge
+        # the target Host, so: if Origin is present it must match the host the
+        # request actually reached. A missing Origin means a non-browser client
+        # (curl, the e2e) or a same-origin GET — those are allowed.
+        if request.method not in UNSAFE_METHODS:
+            return
+        origin = request.headers.get("Origin")
+        if origin is not None and urlparse(origin).netloc != request.host:
+            abort(403)
 
     @app.get("/")
     def index():
@@ -67,6 +85,8 @@ def create_app(config, state, receiver, sender):
 
     @app.post("/api/pair/accept")
     def pair_accept():
+        if config.get("paired"):
+            return jsonify({"error": "Already linked. Unpair first to start over."}), 409
         body = request.get_json(force=True, silent=True) or {}
         name = str(body.get("device_name", "")).strip()
         if not name:
