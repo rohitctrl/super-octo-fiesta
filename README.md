@@ -107,3 +107,31 @@ bash scripts/e2e.sh         # full two-instance transfer through a local relay
 Backend is Flask + the Python standard library, no database; frontend is
 vanilla JS/CSS served by Flask, no build step. The only vendored asset is
 `qrcode-generator` (MIT) for the pairing QR.
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `python -m pytest` and
+`bash scripts/e2e.sh` before submitting, and keep the backend to Flask plus
+the standard library (no new runtime dependencies) and the frontend
+build-free.
+
+## Security
+
+CrocBridge binds to `127.0.0.1` only and the local API has **no
+authentication** — anyone who can reach the port can send files from your
+machine, so do not bind it to other interfaces (the app warns loudly if you
+try). The transfer secret is passed to croc through the `CROC_SECRET`
+environment variable and never on a command line. Found a security issue?
+Please open an issue (or contact the maintainer privately for anything
+sensitive) rather than disclosing it publicly first.
+
+## Credits & license
+
+CrocBridge is an independent project and is **not affiliated with or endorsed
+by** the [croc](https://github.com/schollz/croc) project; it simply invokes
+the croc binary you install. By default, transfers relay through croc's free,
+community-run public relay — please use it considerately, or point CrocBridge
+at your own relay in Settings.
+
+Licensed under the [MIT License](LICENSE). Bundles `qrcode-generator`
+(© Kazuhiko Arase, MIT).
