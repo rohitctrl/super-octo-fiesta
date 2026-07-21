@@ -1,0 +1,68 @@
+/* CrocBridge design tokens — the river crossing system.
+ *
+ * Concept: two machines are opposite banks of a swamp river at dusk;
+ * a transfer is a raft crossing the water. Dark mode only.
+ *
+ * CRITIQUE PASS (against generic defaults, recorded before building):
+ *  - No pure #000/#fff anywhere: the darkest surface is a green-black
+ *    (#0a1512) and "white" text is a warm paper tint (#eaf1ea).
+ *  - No default blue: links and the single primary action per screen are
+ *    amber (lantern light), everything else stays in the teal family.
+ *  - No browser focus ring: a two-layer amber ring token replaces it,
+ *    visible on every interactive element via :focus-visible.
+ *  - No generic progress bar: progress is the raft's position on the
+ *    water (see river scene); percent/speed render in mono on a plaque.
+ *  - Data is never in the UI face: file sizes, speeds, device names and
+ *    pairing strings always use the mono stack.
+ *  - Radius is one consistent 10px, not a mix; shadows are dark-water
+ *    soft, never Material elevation grey.
+ *  - Type: geometric sans stack without webfont downloads (the app must
+ *    work offline): Avenir Next / Futura / Century Gothic where present,
+ *    honest fallbacks elsewhere.
+ */
+
+:root {
+  /* --- water & banks (deep swamp teal) --- */
+  --night: #0a1512;          /* page backdrop, green-black */
+  --river-deep: #0d211c;     /* deep water / recessed wells */
+  --bank: #122b25;           /* card surface */
+  --bank-raised: #1a3a31;    /* raised surface, hover */
+  --bank-edge: #24483d;      /* borders, hairlines */
+  --water: #10352f;          /* river band base */
+  --water-glint: #1d5c4f;    /* moving highlights on the water */
+
+  /* --- lantern amber (accent, one primary action per screen) --- */
+  --amber: #f2a541;
+  --amber-bright: #ffc164;
+  --amber-dim: #a87428;
+  --amber-glow: rgba(242, 165, 65, 0.22);
+
+  /* --- ink & sage (text) --- */
+  --ink: #eaf1ea;            /* primary text, warm paper */
+  --sage: #9db8a8;           /* secondary text */
+  --sage-dim: #5f7a6c;       /* tertiary, placeholders */
+
+  /* --- signals --- */
+  --danger: #e06c5a;
+  --danger-dim: rgba(224, 108, 90, 0.15);
+  --ok: #7dc9a0;
+  --ok-dim: rgba(125, 201, 160, 0.14);
+
+  /* --- type --- */
+  --font-ui: "Avenir Next", Futura, "Century Gothic", Poppins, Seravek,
+             "Trebuchet MS", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono",
+               Menlo, Consolas, monospace;
+  --fs-xs: 0.75rem;
+  --fs-s: 0.875rem;
+  --fs-m: 1rem;
+  --fs-l: 1.35rem;
+  --fs-xl: 2rem;
+
+  /* --- space (4px grid) --- */
+  --s1: 4px; --s2: 8px; --s3: 16px; --s4: 24px; --s5: 40px; --s6: 64px;
+
+  --radius: 10px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --focus: 0 0 0 1.5px var(--amber), 0 0 0 5px var(--amber-glow);
+}

@@ -1,0 +1,11 @@
+                                 Sending 0 files (2.9 MB)                                 Sending 'photo.bin' (2.9 MB)
+Code is: cbsamplecapture42
+
+On the other computer run:
+(For Windows)
+    croc --relay 127.0.0.1:9021 cbsamplecapture42
+(For Linux/macOS)
+    CROC_SECRET="cbsamplecapture42" croc --relay 127.0.0.1:9021 
+
+Sending (->127.0.0.1:42458)
+photo.bin   0% |                    | ( 0 B/3.0 MB) [0s:0s]                                                           photo.bin  77% |███████████████     | (2.3/3.0 MB, 21 MB/s) [0s:0s]                                                                   photo.bin  85% |█████████████████   | (2.6/3.0 MB, 12 MB/s) [0s:0s]                                                                   photo.bin  92% |██████████████████  | (2.8/3.0 MB, 8.5 MB/s) [0s:0s]                                                                    photo.bin 100% |████████████████████| (3.0/3.0 MB, 7.0 MB/s)
