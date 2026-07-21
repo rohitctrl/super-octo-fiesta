@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrocBridge</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐊</text></svg>">
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+
+<div id="banner-offline" class="banner banner-danger" hidden>
+  Bridge app not reachable. Retrying&hellip;
+</div>
+
+<main>
+
+  <!-- ============ croc missing ============ -->
+  <section id="screen-nocroc" hidden>
+    <div class="hero-card">
+      <h1>CrocBridge needs croc</h1>
+      <p class="lede">CrocBridge moves files with <span class="mono">croc</span>, a small
+        command-line tool. Install it once, then come back here.</p>
+      <div id="nocroc-version-warning" class="callout callout-danger" hidden>
+        Your installed croc is too old to receive the transfer secret safely.
+        Update it with the same commands below.
+      </div>
+      <dl class="install-list">
+        <div><dt>macOS</dt><dd><code class="mono">brew install croc</code></dd></div>
+        <div><dt>Linux</dt><dd><code class="mono">curl https://getcroc.schollz.com | bash</code></dd></div>
+        <div><dt>Windows</dt><dd><code class="mono">winget install schollz.croc</code></dd></div>
+      </dl>
+      <button id="btn-recheck-croc" class="btn btn-primary">Check again</button>
+    </div>
+  </section>
+
+  <!-- ============ pairing ============ -->
+  <section id="screen-pairing" hidden>
+    <div class="pairing-head">
+      <h1>Link two machines</h1>
+      <p class="lede">Do this once. After that, files just cross.</p>
+    </div>
+
+    <div class="field name-field">
+      <label for="own-name">This device's name</label>
+      <input id="own-name" class="mono" type="text" maxlength="40"
+             placeholder="e.g. studio-mac" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="pairing-cards">
+      <div class="card" id="card-create">
+        <h2>Start a pairing</h2>
+        <p class="muted">Begin here on the first machine.</p>
+        <button id="btn-create-pairing" class="btn btn-primary">Create pairing</button>
+        <div id="create-result" hidden>
+          <p>Show or send this to the other machine:</p>
+          <div class="string-well">
+            <textarea id="pairing-string-out" class="mono" readonly rows="4" aria-label="Pairing string"></textarea>
+            <button class="btn btn-ghost btn-copy" data-copy="#pairing-string-out">Copy</button>
+          </div>
+          <div id="qr-tile" class="qr-tile" role="img" aria-label="Pairing string as a QR code"></div>
+          <div class="field">
+            <label for="confirmation-in">Then type the short confirmation it shows you:</label>
+            <input id="confirmation-in" class="mono" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="CBOK.&hellip;">
+          </div>
+          <button id="btn-finish-pairing" class="btn btn-primary">Finish linking</button>
+          <p id="create-error" class="error-text" role="alert" hidden></p>
+        </div>
+      </div>
+
+      <div class="card" id="card-join">
+        <h2>Join a pairing</h2>
+        <p class="muted">The other machine already made a pairing string? Paste it here.</p>
+        <div class="field">
+          <label for="pairing-string-in">Pairing string</label>
+          <textarea id="pairing-string-in" class="mono" rows="4" autocomplete="off" spellcheck="false"
+                    placeholder="CB1.&hellip;"></textarea>
+        </div>
+        <button id="btn-join-pairing" class="btn btn-primary">Join</button>
+        <p id="join-error" class="error-text" role="alert" hidden></p>
+        <div id="join-result" hidden>
+          <p class="ok-text">Linked with <span id="join-peer-name" class="mono"></span>.</p>
+          <p>Read this back on the other machine to finish:</p>
+          <div class="string-well">
+            <textarea id="confirmation-out" class="mono" readonly rows="2" aria-label="Confirmation"></textarea>
+            <button class="btn btn-ghost btn-copy" data-copy="#confirmation-out">Copy</button>
+          </div>
+          <button id="btn-join-done" class="btn btn-primary">Done — open the bridge</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ main ============ -->
+  <section id="screen-main" hidden>
+    <header class="topbar">
+      <div class="brand">Croc<span>Bridge</span></div>
+      <div class="topbar-right">
+        <span class="devices mono">
+          <span id="hdr-own-name"></span>
+          <span class="devices-sep" aria-hidden="true">⇄</span>
+          <span id="hdr-peer-name"></span>
+        </span>
+        <button id="btn-settings" class="btn btn-ghost" aria-haspopup="dialog">Settings</button>
+      </div>
+    </header>
+
+    <div id="river-scene" class="river-scene" tabindex="0" role="button"
+         aria-label="Send files: drop them here or press Enter to choose">
+      <!-- SVG injected by river.js -->
+      <div class="bank-labels" aria-hidden="true">
+        <span class="mono" id="bank-label-own"></span>
+        <span class="mono" id="bank-label-peer"></span>
+      </div>
+      <div id="river-hint" class="river-hint">Drop files on the water to send them across</div>
+      <div id="river-plaque" class="river-plaque mono" hidden></div>
+    </div>
+
+    <div class="panels">
+      <div class="panel" id="panel-send">
+        <div class="panel-head">
+          <h2>Send</h2>
+          <span id="send-chip" class="chip" hidden></span>
+        </div>
+        <p class="muted">Drop files on the water, or
+          <button id="btn-pick-files" class="linklike">choose files</button>.</p>
+        <ul id="send-files" class="file-list mono"></ul>
+        <p id="send-error" class="error-text" role="alert" hidden></p>
+        <button id="btn-cancel-send" class="btn btn-ghost" hidden>Stop sending</button>
+      </div>
+
+      <div class="panel" id="panel-arrivals">
+        <div class="panel-head">
+          <h2>Arrivals</h2>
+          <span id="receiver-chip" class="chip"></span>
+        </div>
+        <p id="receiver-error" class="error-text" role="alert" hidden></p>
+        <ul id="received-files" class="file-list mono"></ul>
+        <p id="arrivals-empty" class="muted">Nothing has arrived yet this session.</p>
+        <button id="btn-open-folder" class="btn btn-ghost">Open download folder</button>
+        <p id="open-folder-path" class="muted mono" hidden></p>
+      </div>
+    </div>
+
+    <div class="history">
+      <h2>This session</h2>
+      <p id="history-empty" class="muted">Transfers will be listed here.</p>
+      <div class="table-scroll">
+        <table id="history-table" hidden>
+          <thead>
+            <tr><th scope="col">Way</th><th scope="col">Files</th><th scope="col">Size</th>
+                <th scope="col">Took</th><th scope="col">Result</th></tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<input id="file-input" type="file" multiple hidden aria-hidden="true" tabindex="-1">
+
+<dialog id="settings-dialog">
+  <form method="dialog" class="settings-form">
+    <h2>Settings</h2>
+    <div class="field">
+      <label for="set-device-name">Device name</label>
+      <input id="set-device-name" class="mono" type="text" maxlength="40">
+      <p class="hint">Changing it changes how transfers find this machine from tomorrow's rotation on.</p>
+    </div>
+    <div class="field">
+      <label for="set-download-dir">Download folder</label>
+      <input id="set-download-dir" class="mono" type="text">
+    </div>
+    <div class="field">
+      <label for="set-relay">Relay address <span class="hint-inline">(blank = public relay)</span></label>
+      <input id="set-relay" class="mono" type="text" placeholder="host:port">
+    </div>
+    <div class="field">
+      <label for="set-relay-pass">Relay password</label>
+      <input id="set-relay-pass" class="mono" type="password" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="set-socks5">SOCKS5 proxy</label>
+      <input id="set-socks5" class="mono" type="text" placeholder="host:port">
+    </div>
+    <label class="field-check">
+      <input id="set-overwrite" type="checkbox">
+      Replace files that already exist in the download folder
+    </label>
+    <p id="settings-error" class="error-text" role="alert" hidden></p>
+    <div class="dialog-actions">
+      <button value="cancel" class="btn btn-ghost" formnovalidate>Close</button>
+      <button id="btn-save-settings" value="save" class="btn btn-primary">Save</button>
+    </div>
+    <hr>
+    <div class="danger-zone">
+      <p class="muted">Unpairing forgets the link and its secret on this machine.</p>
+      <button id="btn-unpair" type="button" class="btn btn-danger-ghost">Unpair&hellip;</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="unpair-dialog">
+  <form method="dialog">
+    <h2>Unpair?</h2>
+    <p>This machine will forget <span id="unpair-peer" class="mono"></span> and stop
+       listening for its files. You'll need to pair again to reconnect.</p>
+    <div class="dialog-actions">
+      <button value="cancel" class="btn btn-ghost">Keep the link</button>
+      <button id="btn-unpair-confirm" value="unpair" class="btn btn-danger">Unpair</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/vendor/qrcode.js"></script>
+<script src="/static/js/river.js"></script>
+<script src="/static/js/pairing.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>
